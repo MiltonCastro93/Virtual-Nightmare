@@ -7,6 +7,8 @@ public class PlayerController : CharacterHuman
 
     private PlayerInputHandler inputHandler;
     private CharacterMotor motor;
+    [SerializeField] private CameraController cameraController;
+    [SerializeField] private CharacterInteractor interactor;
 
     protected override void Awake()
     {
@@ -20,12 +22,24 @@ public class PlayerController : CharacterHuman
 
     private void OnEnable()
     {
-        inputHandler.OnInteract += HandleInteract;
+        inputHandler.OnInteract += HandleInteract;//PlayerInputHandler <--- PlayerController
+        inputHandler.OnRunStarted += HandleRunStarted;
+        inputHandler.OnRunCanceled += HandleRunCanceled;
+
+        inputHandler.OnLeanLeft += HandleLeanLeft;
+        inputHandler.OnLeanRight += HandleLeanRight;
+        inputHandler.OnLeanReset += HandleLeanReset;
     }
 
     private void OnDisable()
     {
-        inputHandler.OnInteract -= HandleInteract;
+        inputHandler.OnInteract -= HandleInteract;//PlayerInputHandler <--- PlayerController
+        inputHandler.OnRunStarted -= HandleRunStarted;
+        inputHandler.OnRunCanceled -= HandleRunCanceled;
+
+        inputHandler.OnLeanLeft -= HandleLeanLeft;
+        inputHandler.OnLeanRight -= HandleLeanRight;
+        inputHandler.OnLeanReset -= HandleLeanReset;
     }
 
     protected override void Update()
@@ -33,17 +47,49 @@ public class PlayerController : CharacterHuman
         base.Update();
 
         HandleMovement();
+        HandleCamera();
     }
 
     private void HandleMovement()
-    {
+    {//PlayerInputHandler --> PlayerController --> CharacterMotor
         motor.Move(inputHandler.MoveInput);
     }
 
-    private void HandleInteract()
-    {
-        Debug.Log("El jugador quiere interactuar");
+    private void HandleCamera()
+    {//PlayerInputHandler --> PlayerController --> CameraController
+        cameraController.Look(inputHandler.LookInput);
     }
+    //------------------------------
+    private void HandleInteract()
+    {//PlayerInputHandler --> PlayerController --> CharacterInteractor
+        interactor.Interact();
+    }
+
+    private void HandleRunStarted()
+    {
+        motor.SetRunning(true);
+    }
+
+    private void HandleRunCanceled()
+    {
+        motor.SetRunning(false);
+    }
+
+    private void HandleLeanLeft()
+    {
+        cameraController.LeanLeft();
+    }
+
+    private void HandleLeanRight()
+    {
+        cameraController.LeanRight();
+    }
+
+    private void HandleLeanReset()
+    {
+        cameraController.ResetLean();
+    }
+
 }
 
 /* pasa la tarea mirando quien la hace
