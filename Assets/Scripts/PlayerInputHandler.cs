@@ -4,70 +4,109 @@ using UnityEngine.InputSystem;
 
 public class PlayerInputHandler : MonoBehaviour
 {//Responsable en Detectar el Input del Jugador
-    public event Action OnInteract;
-    public event Action OnLeanLeft;
-    public event Action OnLeanRight;
-    public event Action OnLeanReset;
-    public event Action OnRunStarted;
-    public event Action OnRunCanceled;
-
+    // INPUT CONTINUO
     public Vector2 MoveInput { get; private set; }
     public Vector2 LookInput { get; private set; }
 
-    //----------------Player---------------------
-    public void Move(InputAction.CallbackContext context)
+    // EVENTOS
+    public event Action OnInteract;
+
+    public event Action OnRunStarted;
+    public event Action OnRunCanceled;
+
+    public event Action OnLeanLeft;
+    public event Action OnLeanRight;
+    public event Action OnLeanReset;
+
+    private InputSystem_Actions inputActions;
+
+    private void Awake()
+    {
+        inputActions = new InputSystem_Actions();
+    }
+
+    private void OnEnable()
+    {
+        inputActions.Player.Enable();
+
+        inputActions.Player.Move.performed += HandleMove;
+        inputActions.Player.Move.canceled += HandleMove;
+
+        inputActions.Player.Look.performed += HandleLook;
+        inputActions.Player.Look.canceled += HandleLook;
+
+        inputActions.Player.Interact.performed += HandleInteract;
+
+        inputActions.Player.Sprint.started += HandleRunStarted;
+        inputActions.Player.Sprint.canceled += HandleRunCanceled;
+
+        inputActions.Player.LeanLeft.started += HandleLeanLeft;
+        inputActions.Player.LeanLeft.canceled += HandleLeanReset;
+
+        inputActions.Player.LeanRight.started += HandleLeanRight;
+        inputActions.Player.LeanRight.canceled += HandleLeanReset;
+    }
+
+    private void OnDisable()
+    {
+        inputActions.Player.Move.performed -= HandleMove;
+        inputActions.Player.Move.canceled -= HandleMove;
+
+        inputActions.Player.Look.performed -= HandleLook;
+        inputActions.Player.Look.canceled -= HandleLook;
+
+        inputActions.Player.Interact.performed -= HandleInteract;
+
+        inputActions.Player.Sprint.started -= HandleRunStarted;
+        inputActions.Player.Sprint.canceled -= HandleRunCanceled;
+
+        inputActions.Player.LeanLeft.started -= HandleLeanLeft;
+        inputActions.Player.LeanLeft.canceled -= HandleLeanReset;
+
+        inputActions.Player.LeanRight.started -= HandleLeanRight;
+        inputActions.Player.LeanRight.canceled -= HandleLeanReset;
+
+        inputActions.Player.Disable();
+    }
+
+    private void HandleMove(InputAction.CallbackContext context)
     {
         MoveInput = context.ReadValue<Vector2>();
     }
 
-    public void Interact(InputAction.CallbackContext context)
-    {
-        OnInteract?.Invoke();
-    }
-
-    public void Runner(InputAction.CallbackContext context)
-    {
-        if (context.started)
-        {
-            OnRunStarted?.Invoke();
-        }
-
-        if (context.canceled)
-        {
-            OnRunCanceled?.Invoke();
-        }
-    }
-
-    //----------------Camara----------------------
-    public void LookCam(InputAction.CallbackContext context)
+    private void HandleLook(InputAction.CallbackContext context)
     {
         LookInput = context.ReadValue<Vector2>();
     }
 
-    public void LeanLeft(InputAction.CallbackContext context)
+    private void HandleInteract(InputAction.CallbackContext context)
     {
-        if (context.started)
-        {
-            OnLeanLeft?.Invoke();
-        }
-
-        if (context.canceled)
-        {
-            OnLeanReset?.Invoke();
-        }
+        OnInteract?.Invoke();
     }
 
-    public void LeanRight(InputAction.CallbackContext context)
+    private void HandleRunStarted(InputAction.CallbackContext context)
     {
-        if (context.started)
-        {
-            OnLeanRight?.Invoke();
-        }
+        OnRunStarted?.Invoke();
+    }
 
-        if (context.canceled)
-        {
-            OnLeanReset?.Invoke();
-        }
+    private void HandleRunCanceled(InputAction.CallbackContext context)
+    {
+        OnRunCanceled?.Invoke();
+    }
+
+    private void HandleLeanLeft(InputAction.CallbackContext context)
+    {
+        OnLeanLeft?.Invoke();
+    }
+
+    private void HandleLeanRight(InputAction.CallbackContext context)
+    {
+        OnLeanRight?.Invoke();
+    }
+
+    private void HandleLeanReset(InputAction.CallbackContext context)
+    {
+        OnLeanReset?.Invoke();
     }
 
 }
