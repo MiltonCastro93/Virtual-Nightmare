@@ -9,14 +9,16 @@ public class PlayerInputHandler : MonoBehaviour
     public Vector2 LookInput { get; private set; }
 
     // EVENTOS
+    public event Action OnMoveStarted;//ayuda para el PlayerController se de cuenta cuando se empiece a mover
+    public event Action OnMoveCanceled;
     public event Action OnInteract;
-
     public event Action OnRunStarted;
     public event Action OnRunCanceled;
-
     public event Action OnLeanLeft;
     public event Action OnLeanRight;
     public event Action OnLeanReset;
+    public event Action OnLookBack;
+    public event Action OnLookBackCanceled;
 
     private InputSystem_Actions inputActions;
 
@@ -45,6 +47,9 @@ public class PlayerInputHandler : MonoBehaviour
 
         inputActions.Player.LeanRight.started += HandleLeanRight;
         inputActions.Player.LeanRight.canceled += HandleLeanReset;
+
+        inputActions.Player.LookBack.started += HandleLookBackStarted;
+        inputActions.Player.LookBack.canceled += HandleLookBackCanceled;
     }
 
     private void OnDisable()
@@ -66,12 +71,24 @@ public class PlayerInputHandler : MonoBehaviour
         inputActions.Player.LeanRight.started -= HandleLeanRight;
         inputActions.Player.LeanRight.canceled -= HandleLeanReset;
 
+        inputActions.Player.LookBack.started -= HandleLookBackStarted;
+        inputActions.Player.LookBack.canceled -= HandleLookBackCanceled;
+
         inputActions.Player.Disable();
     }
 
     private void HandleMove(InputAction.CallbackContext context)
     {
         MoveInput = context.ReadValue<Vector2>();
+
+        if (context.performed)
+        {
+            OnMoveStarted?.Invoke();
+        }
+        else if (context.canceled)
+        {
+            OnMoveCanceled?.Invoke();
+        }
     }
 
     private void HandleLook(InputAction.CallbackContext context)
@@ -107,6 +124,16 @@ public class PlayerInputHandler : MonoBehaviour
     private void HandleLeanReset(InputAction.CallbackContext context)
     {
         OnLeanReset?.Invoke();
+    }
+
+    private void HandleLookBackStarted(InputAction.CallbackContext context)
+    {
+        OnLookBack?.Invoke();
+    }
+
+    private void HandleLookBackCanceled(InputAction.CallbackContext context)
+    {
+        OnLookBackCanceled?.Invoke();
     }
 
 }

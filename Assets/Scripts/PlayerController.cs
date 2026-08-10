@@ -6,25 +6,30 @@ public class PlayerController : CharacterHuman
     //es el Orquestador. "El Jugador quiere moverse; Motor, encargate" UwU
 
     private PlayerInputHandler inputHandler;
-    private CharacterMotor motor;
     [SerializeField] private CameraController cameraController;
     [SerializeField] private CharacterInteractor interactor;
+
+    private bool isLeaning, isLookingBack; //Bool Banderas para detectar si estoy corriendo, inclinado, mirando mi nuca
 
     protected override void Awake()
     {
         base.Awake();
 
         inputHandler = GetComponent<PlayerInputHandler>();
-        motor = GetComponent<CharacterMotor>();
-
-        //stateMachine.ChangeState(new IdleState());
     }
 
     private void OnEnable()
     {
         inputHandler.OnInteract += HandleInteract;//PlayerInputHandler <--- PlayerController
+
+        inputHandler.OnMoveStarted += HandleMoveStarted;//ayuda a cambiar entre idle a walking
+        inputHandler.OnMoveCanceled += HandleMoveCanceled;
+
         inputHandler.OnRunStarted += HandleRunStarted;
         inputHandler.OnRunCanceled += HandleRunCanceled;
+
+        inputHandler.OnLookBack += HandleLookBack;
+        inputHandler.OnLookBackCanceled += HandleLookBackCanceled;
 
         inputHandler.OnLeanLeft += HandleLeanLeft;
         inputHandler.OnLeanRight += HandleLeanRight;
@@ -34,8 +39,15 @@ public class PlayerController : CharacterHuman
     private void OnDisable()
     {
         inputHandler.OnInteract -= HandleInteract;//PlayerInputHandler <--- PlayerController
+
+        inputHandler.OnMoveStarted -= HandleMoveStarted;
+        inputHandler.OnMoveCanceled -= HandleMoveCanceled;
+
         inputHandler.OnRunStarted -= HandleRunStarted;
         inputHandler.OnRunCanceled -= HandleRunCanceled;
+
+        inputHandler.OnLookBack -= HandleLookBack;
+        inputHandler.OnLookBackCanceled -= HandleLookBackCanceled;
 
         inputHandler.OnLeanLeft -= HandleLeanLeft;
         inputHandler.OnLeanRight -= HandleLeanRight;
@@ -48,6 +60,8 @@ public class PlayerController : CharacterHuman
 
         HandleMovement();
         HandleCamera();
+
+        Debug.Log("Estado Actual: " + stateMachine.currentState.ToString());
     }
 
     private void HandleMovement()
@@ -65,29 +79,106 @@ public class PlayerController : CharacterHuman
         interactor.Interact();
     }
 
+    private void HandleMoveStarted()
+    {
+        if (stateMachine.currentState == idleState)
+        {
+            stateMachine.ChangeState(walkingState);
+        }
+    }
+
+    private void HandleMoveCanceled()
+    {
+        if (stateMachine.currentState == walkingState ||
+            stateMachine.currentState == runningState)
+        {
+            stateMachine.ChangeState(idleState);
+        }
+    }
+
     private void HandleRunStarted()
     {
-        motor.SetRunning(true);
+        // Cancelar Lean
+        if (isLeaning)
+        {
+            isLeaning = false;
+            cameraController.ResetLean();
+        }
+
+        // Cancelar mirar atrás
+        if (isLookingBack)
+        {
+            isLookingBack = false;
+            cameraController.ResetLookBack();
+        }
+
+
+        stateMachine.ChangeState(runningState);
     }
 
     private void HandleRunCanceled()
     {
-        motor.SetRunning(false);
+        if(inputHandler.MoveInput.sqrMagnitude > 0.01f)
+        {
+            stateMachine.ChangeState(walkingState);
+        }
+        else
+        {
+            stateMachine.ChangeState(idleState);
+        }
+
     }
 
     private void HandleLeanLeft()
     {
+        //Si estoy corriendo no deja entrar en el evento
+        if (stateMachine.currentState == runningState)
+            return;
+
+        isLeaning = true;
+
         cameraController.LeanLeft();
     }
 
     private void HandleLeanRight()
     {
+        if (stateMachine.currentState == runningState)
+            return;
+
+        isLeaning = true;
+
         cameraController.LeanRight();
     }
 
     private void HandleLeanReset()
     {
+        isLeaning = false;
+
         cameraController.ResetLean();
+    }
+
+    private void HandleLookBack()
+    {
+        if (stateMachine.currentState == runningState)
+        {
+            return;
+        }
+
+        isLookingBack = true;
+
+        cameraController.LookBack();
+    }
+
+    private void HandleLookBackCanceled()
+    {
+        //Puede ocurrir que quiera cancelar 2 veces
+        if (!isLookingBack)
+            return;
+
+        isLookingBack = false;
+
+        cameraController.ResetLookBack();
+
     }
 
 }

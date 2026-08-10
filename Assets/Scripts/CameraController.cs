@@ -15,6 +15,7 @@ public class CameraController : MonoBehaviour
     [Header("Inclinación")]
     [SerializeField] private float angleLeanMax = 20f;
 
+    private float rotationY;
     private float rotationX;
     private float rotationZ;
 
@@ -43,29 +44,38 @@ public class CameraController : MonoBehaviour
     public void LeanLeft()
     {
         rotationZ = angleLeanMax;
-        ApplyRotation();
     }
 
     public void LeanRight()
     {
         rotationZ = -angleLeanMax;
-        ApplyRotation();
     }
 
     public void ResetLean()
     {
         rotationZ = 0f;
-        ApplyRotation();
     }
+
+    public void LookBack()
+    {
+        rotationY = 180f;
+    }
+
+    public void ResetLookBack()
+    {
+        rotationY = 0f;
+    }
+
 
     private void ApplyRotation()
     {
         transform.localRotation = Quaternion.Euler(
             rotationX,
-            0f,
+            rotationY,
             rotationZ
         );
     }
+
 }
 /*
 ├── Look()

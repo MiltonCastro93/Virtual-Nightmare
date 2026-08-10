@@ -181,6 +181,16 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""initialStateCheck"": false,
                     ""priority"": 0
+                },
+                {
+                    ""name"": ""LookBack"",
+                    ""type"": ""Button"",
+                    ""id"": ""d69cf737-98b6-42a8-80d7-66f205abdb5b"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
                 }
             ],
             ""bindings"": [
@@ -577,6 +587,61 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
                     ""action"": ""LeanRight"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""bae3c720-e37b-4fb3-834e-3b387864969c"",
+                    ""path"": """",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""LookBack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""743ba42c-324f-49a4-b902-2d25ff8582db"",
+                    ""path"": ""<Mouse>/middleButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""LookBack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""75bcac36-ec7a-4e17-8538-5f3e1393bd57"",
+                    ""path"": ""<Mouse>/middleButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""LookBack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""6df70238-55be-4a86-be8c-07769fc59383"",
+                    ""path"": ""<Keyboard>/alt"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""LookBack"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""eab8a2fe-8697-4c02-9d22-633b7fa156e3"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""LookBack"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -1183,6 +1248,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         m_Player_Sprint = m_Player.FindAction("Sprint", throwIfNotFound: true);
         m_Player_LeanLeft = m_Player.FindAction("LeanLeft", throwIfNotFound: true);
         m_Player_LeanRight = m_Player.FindAction("LeanRight", throwIfNotFound: true);
+        m_Player_LookBack = m_Player.FindAction("LookBack", throwIfNotFound: true);
         // UI
         m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
         m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1285,6 +1351,7 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Sprint;
     private readonly InputAction m_Player_LeanLeft;
     private readonly InputAction m_Player_LeanRight;
+    private readonly InputAction m_Player_LookBack;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -1332,6 +1399,10 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/LeanRight".
         /// </summary>
         public InputAction @LeanRight => m_Wrapper.m_Player_LeanRight;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/LookBack".
+        /// </summary>
+        public InputAction @LookBack => m_Wrapper.m_Player_LookBack;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -1385,6 +1456,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @LeanRight.started += instance.OnLeanRight;
             @LeanRight.performed += instance.OnLeanRight;
             @LeanRight.canceled += instance.OnLeanRight;
+            @LookBack.started += instance.OnLookBack;
+            @LookBack.performed += instance.OnLookBack;
+            @LookBack.canceled += instance.OnLookBack;
         }
 
         /// <summary>
@@ -1423,6 +1497,9 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
             @LeanRight.started -= instance.OnLeanRight;
             @LeanRight.performed -= instance.OnLeanRight;
             @LeanRight.canceled -= instance.OnLeanRight;
+            @LookBack.started -= instance.OnLookBack;
+            @LookBack.performed -= instance.OnLookBack;
+            @LookBack.canceled -= instance.OnLookBack;
         }
 
         /// <summary>
@@ -1786,6 +1863,13 @@ public partial class @InputSystem_Actions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnLeanRight(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "LookBack" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnLookBack(InputAction.CallbackContext context);
     }
     /// <summary>
     /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.
