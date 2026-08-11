@@ -19,6 +19,8 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action OnLeanReset;
     public event Action OnLookBack;
     public event Action OnLookBackCanceled;
+    public event Action OnCrouchStarted;
+    public event Action OnCrouchCanceled;
 
     private InputSystem_Actions inputActions;
 
@@ -50,6 +52,9 @@ public class PlayerInputHandler : MonoBehaviour
 
         inputActions.Player.LookBack.started += HandleLookBackStarted;
         inputActions.Player.LookBack.canceled += HandleLookBackCanceled;
+
+        inputActions.Player.Crouch.started += HandleCrouchStarted;
+        inputActions.Player.Crouch.canceled += HandleCrouchCanceled;
     }
 
     private void OnDisable()
@@ -73,6 +78,9 @@ public class PlayerInputHandler : MonoBehaviour
 
         inputActions.Player.LookBack.started -= HandleLookBackStarted;
         inputActions.Player.LookBack.canceled -= HandleLookBackCanceled;
+
+        inputActions.Player.Crouch.started -= HandleCrouchStarted;
+        inputActions.Player.Crouch.canceled -= HandleCrouchCanceled;
 
         inputActions.Player.Disable();
     }
@@ -134,6 +142,16 @@ public class PlayerInputHandler : MonoBehaviour
     private void HandleLookBackCanceled(InputAction.CallbackContext context)
     {
         OnLookBackCanceled?.Invoke();
+    }
+
+    private void HandleCrouchStarted(InputAction.CallbackContext context)
+    {
+        OnCrouchStarted?.Invoke();
+    }
+
+    private void HandleCrouchCanceled(InputAction.CallbackContext context)
+    {
+        OnCrouchCanceled?.Invoke();
     }
 
 }

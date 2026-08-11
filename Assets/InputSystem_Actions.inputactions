@@ -547,17 +547,6 @@
                     "action": "LookBack",
                     "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "eab8a2fe-8697-4c02-9d22-633b7fa156e3",
-                    "path": "<Keyboard>/f",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": ";Keyboard&Mouse",
-                    "action": "LookBack",
-                    "isComposite": false,
-                    "isPartOfComposite": false
                 }
             ]
         },
