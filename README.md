@@ -1,4 +1,4 @@
-<h1 align="center">🎮 [NOMBRE DEL PROYECTO] — Character Controller & Core Systems</h1>
+<h1 align="center">🎮 Virtual Nightmare — Character Controller & Core Systems</h1>
 
 <p align="center">
   <i>Prototipo de horror en primera persona — Desarrollo activo del personaje, cámara e interacción</i>
