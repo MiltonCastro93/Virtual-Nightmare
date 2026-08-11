@@ -610,7 +610,6 @@ Los diagramas de arquitectura se almacenarán dentro del repositorio.
 
 <p align="center">
   <img src="Documentation/Architecture/architecture.png" width="800" alt="Arquitectura general"/>
-  <img src="https://github.com/MiltonCastro93/Virtual-Nightmare/blob/main/diagrama.png" width="800" alt="Arquitectura general"/>  
 </p>
 
 ## Diagrama de Clases
