@@ -8,7 +8,7 @@ public class PlayerController : CharacterHuman
     private PlayerInputHandler inputHandler;
     [SerializeField] private CameraController cameraController;
     [SerializeField] private CharacterInteractor interactor;
-    private bool isLeaning, isLookingBack; //Bool Banderas para detectar si estoy corriendo, inclinado, mirando mi nuca
+    private bool isLeaning, isLookingBack, crouchHeld; //Bool Banderas para detectar si estoy inclinado, mirando mi nuca, Levantarse
     protected SlidingState slidingState;
     protected CrouchingState crouchingState;
 
@@ -70,6 +70,7 @@ public class PlayerController : CharacterHuman
 
         HandleMovement();
         HandleCamera();
+        HandleCrouchAutoStand();//Verifica en que estado volver
 
         Debug.Log("Estado Actual: " + stateMachine.currentState.ToString());
     }
@@ -193,6 +194,8 @@ public class PlayerController : CharacterHuman
 
     private void HandleCrouchStarted()
     {
+        crouchHeld = true;
+
         if (stateMachine.currentState == runningState)
         {
             stateMachine.ChangeState(slidingState);
@@ -201,7 +204,6 @@ public class PlayerController : CharacterHuman
 
         if (stateMachine.currentState == crouchingState)
         {
-            //ExitCrouch();
             return;
         }
 
@@ -214,7 +216,14 @@ public class PlayerController : CharacterHuman
 
     private void HandleCrouchCanceled()
     {
-        if (stateMachine.currentState != crouchingState) return;
+        crouchHeld = false;
+
+        if (stateMachine.currentState != crouchingState)
+            return;
+
+        // No hay espacio para levantarse, Hace un chequeo en el CharacterMotor
+        if (!motor.CanStandUp())
+            return;
 
         if (inputHandler.MoveInput.sqrMagnitude > 0.01f)
         {
@@ -222,6 +231,25 @@ public class PlayerController : CharacterHuman
         }
         else
         {
+            stateMachine.ChangeState(idleState);
+        }
+    }
+
+    private void HandleCrouchAutoStand()
+    {
+        if (stateMachine.currentState != crouchingState)
+            return;
+
+        if (crouchHeld)
+            return;
+
+        if (!crouchingState.CanExit())//Metodo Expuesto de la Clase CrouchingState
+            return;
+
+        if (inputHandler.MoveInput.sqrMagnitude > 0.01f)
+        {
+            stateMachine.ChangeState(walkingState);
+        } else {
             stateMachine.ChangeState(idleState);
         }
     }

@@ -1,3 +1,4 @@
+using System;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -15,11 +16,12 @@ public class CharacterMotor : MonoBehaviour
     [Header("Parametros del Crouch")]
     [SerializeField] private float crouchHeight = 1f;
     [SerializeField] private float crouchCenter = 0.5f;
-    [SerializeField] private float crouchTransitionSpeed = 6f;
+    [SerializeField] private float crouchDownSpeed = 8f, crouchUpSpeed = 6f;
+    [SerializeField] private LayerMask environmentMask;//Mascara de deteccion
+
     private bool isCrouching;
     private float standingHeight;//valores predeterminados del CharacterController
     private Vector3 standingCenter;
-
 
     private void Awake() {
         //Obtengo el CharacterController de ref y sus valores para el crouch
@@ -62,20 +64,6 @@ public class CharacterMotor : MonoBehaviour
 
     public void SetCrouching(bool crouching)
     {
-        //if (crouching)
-        //{
-        //    characterController.height = crouchHeight;
-
-        //    Vector3 center = characterController.center;
-        //    center.y = crouchCenter;
-
-        //    characterController.center = center;
-        //}
-        //else
-        //{
-        //    characterController.height = standingHeight;
-        //    characterController.center = standingCenter;
-        //}
         isCrouching = crouching;
     }
 
@@ -89,10 +77,14 @@ public class CharacterMotor : MonoBehaviour
             ? crouchCenter
             : standingCenter.y;
 
+        float transitionSpeed = isCrouching
+            ? crouchDownSpeed
+            : crouchUpSpeed;
+
         characterController.height = Mathf.MoveTowards(
             characterController.height,
             targetHeight,
-            crouchTransitionSpeed * Time.deltaTime
+            transitionSpeed * Time.deltaTime
         );
 
         Vector3 center = characterController.center;
@@ -100,10 +92,28 @@ public class CharacterMotor : MonoBehaviour
         center.y = Mathf.MoveTowards(
             center.y,
             targetCenterY,
-            crouchTransitionSpeed * Time.deltaTime
+            transitionSpeed * Time.deltaTime
         );
 
         characterController.center = center;
+    }
+    public bool CanStandUp()//verificar si se puede levantar; Usada en dos clases PlayerController && CrouchingState
+    {
+        Vector3 bottom = transform.position
+            + standingCenter
+            + Vector3.up * characterController.radius;
+
+        Vector3 top = transform.position
+            + standingCenter
+            + Vector3.up * (standingHeight - characterController.radius);
+
+        return !Physics.CheckCapsule(
+            bottom,
+            top,
+            characterController.radius,
+            environmentMask,
+            QueryTriggerInteraction.Ignore
+        );
     }
 
     public void StartSlide()

@@ -23,5 +23,10 @@ public class CrouchingState : ICharacterState
         motor.SetCrouching(false);
     }
 
+    //expongo un metodo para que el PlayerController determine en que estar volver
+    public bool CanExit()
+    {
+        return motor.CanStandUp();
+    }
 
 }

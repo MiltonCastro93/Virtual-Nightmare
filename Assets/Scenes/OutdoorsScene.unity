@@ -680,6 +680,13 @@ MonoBehaviour:
   moveSpeed: 5
   runSpeed: 10
   gravity: -20
+  crouchHeight: 1
+  crouchCenter: 0.5
+  crouchDownSpeed: 6
+  crouchUpSpeed: 2
+  environmentMask:
+    serializedVersion: 2
+    m_Bits: 8
 --- !u!114 &1090040279
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -757,7 +764,7 @@ GameObject:
   - component: {fileID: 1181091214}
   - component: {fileID: 1181091213}
   - component: {fileID: 1181091212}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -851,8 +858,8 @@ Transform:
   m_GameObject: {fileID: 1181091211}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.8014, y: 1.8, z: 1.32299}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -0.8014, y: 1.5, z: 1.32299}
+  m_LocalScale: {x: 1, y: 0.30362, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
