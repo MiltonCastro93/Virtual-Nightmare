@@ -70,6 +70,8 @@ public class PlayerController : CharacterHuman
 
         HandleMovement();
         HandleCamera();
+
+        HandleSlide();//Efecto para deslizar
         HandleCrouchAutoStand();//Verifica en que estado volver
 
         Debug.Log("Estado Actual: " + stateMachine.currentState.ToString());
@@ -195,18 +197,22 @@ public class PlayerController : CharacterHuman
     private void HandleCrouchStarted()
     {
         crouchHeld = true;
-
+        // Corriendo + movimiento hacia adelante = Slide
         if (stateMachine.currentState == runningState)
         {
-            stateMachine.ChangeState(slidingState);
+            if (inputHandler.MoveInput.y > 0.1f)
+            {
+                stateMachine.ChangeState(slidingState);
+            }
+
             return;
         }
-
+        // Ya está agachado
         if (stateMachine.currentState == crouchingState)
         {
             return;
         }
-
+        // Quieto o caminando = Crouch
         if (stateMachine.currentState == idleState ||
             stateMachine.currentState == walkingState)
         {
@@ -252,6 +258,17 @@ public class PlayerController : CharacterHuman
         } else {
             stateMachine.ChangeState(idleState);
         }
+    }
+
+    private void HandleSlide()
+    {
+        if (stateMachine.currentState != slidingState)
+            return;
+
+        if (!motor.IsSlideFinished())
+            return;
+
+        stateMachine.ChangeState(crouchingState);
     }
 
 }

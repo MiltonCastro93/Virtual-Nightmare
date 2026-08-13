@@ -687,6 +687,8 @@ MonoBehaviour:
   environmentMask:
     serializedVersion: 2
     m_Bits: 8
+  slideSpeed: 12
+  slideDeceleration: 8
 --- !u!114 &1090040279
 MonoBehaviour:
   m_ObjectHideFlags: 0

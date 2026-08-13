@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class SlidingState : ICharacterState
 {//Deslizamiento iniciado al correr + agacharse
-    public bool CanMove => false;//*
+    public bool CanMove => true;//*
     private readonly CharacterMotor motor;
     public SlidingState(CharacterMotor Mymotor)
     {
@@ -13,16 +13,17 @@ public class SlidingState : ICharacterState
     public void EnterState()
     {
         motor.StartSlide();
+        motor.SetCrouching(true);
     }
 
     public void UpdateState()
     {
-        //Mas Adelante: Comprobar si el Slide Termino!
+
     }
 
     public void ExitState()
     {
-        motor.StopSlider();
+        motor.StopSlide();
     }
 
 }

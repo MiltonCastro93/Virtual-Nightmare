@@ -19,6 +19,12 @@ public class CharacterMotor : MonoBehaviour
     [SerializeField] private float crouchDownSpeed = 8f, crouchUpSpeed = 6f;
     [SerializeField] private LayerMask environmentMask;//Mascara de deteccion
 
+    [Header("Slide")]
+    [SerializeField] private float slideSpeed = 12f;
+    [SerializeField] private float slideDeceleration = 8f;
+
+    private bool isSliding;
+    private float currentSlideSpeed;
     private bool isCrouching;
     private float standingHeight;//valores predeterminados del CharacterController
     private Vector3 standingCenter;
@@ -33,16 +39,28 @@ public class CharacterMotor : MonoBehaviour
     private void Update()
     {
         UpdateCrouch();
+        UpdateSlide();
     }
 
     public void Move(Vector2 input)
     {
-        float currentSpeed = isRunning ? runSpeed : moveSpeed;
+        Vector3 movement;
 
-        Vector3 movement = new Vector3(input.x, 0f, input.y);
+        if (isSliding)
+        {
+            //para deslizar siempre hacia adelante
+            movement.x = 0f;
+            movement = transform.forward * currentSlideSpeed;
+        }
+        else
+        {
+            //para moverse libremente
+            float currentSpeed = isRunning ? runSpeed : moveSpeed;
 
-        movement = transform.TransformDirection(movement);
-        movement *= currentSpeed;
+            movement = new Vector3(input.x, 0f, input.y);
+            movement = transform.TransformDirection(movement);
+            movement *= currentSpeed;
+        }
 
         // Gravedad
         if (characterController.isGrounded && verticalVelocity < 0f)
@@ -54,7 +72,9 @@ public class CharacterMotor : MonoBehaviour
 
         movement.y = verticalVelocity;
 
-        characterController.Move(movement * Time.deltaTime);
+        characterController.Move(
+            movement * Time.deltaTime
+        );
     }
 
     public void SetRunning(bool running)
@@ -68,7 +88,7 @@ public class CharacterMotor : MonoBehaviour
     }
 
     private void UpdateCrouch()
-    {
+    {//actualizar la capsula collider del CharacterController
         float targetHeight = isCrouching
             ? crouchHeight
             : standingHeight;
@@ -118,12 +138,31 @@ public class CharacterMotor : MonoBehaviour
 
     public void StartSlide()
     {
-
+        isSliding = true;
+        currentSlideSpeed = slideSpeed;
     }
 
-    public void StopSlider()
+    public void StopSlide()
     {
+        isSliding = false;
+        currentSlideSpeed = 0f;
+    }
 
+    private void UpdateSlide()
+    {
+        if (!isSliding)
+            return;
+
+        currentSlideSpeed = Mathf.MoveTowards(
+            currentSlideSpeed,
+            0f,
+            slideDeceleration * Time.deltaTime
+        );
+    }
+
+    public bool IsSlideFinished()
+    {
+        return currentSlideSpeed <= 0.01f;
     }
 
 }

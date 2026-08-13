@@ -30,3 +30,5 @@ public class CrouchingState : ICharacterState
     }
 
 }
+//La clase "CrouchingState" es la que detecta cuando puede levantarse, pero que PlayerController sea quien determine a qué estado volver.
+//Por eso Llama al metodo publico de motor.CanStandUp(), que hace una comprobacion bool con la funcion "Physics.CheckCapsule"
