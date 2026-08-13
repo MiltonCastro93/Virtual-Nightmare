@@ -7,9 +7,7 @@ public class CharacterMotor : MonoBehaviour
 {//Mover Fisicamente al Personaje
     [SerializeField] private float moveSpeed = 5f, runSpeed = 10f;
     private bool isRunning;
-
     [SerializeField] private float gravity = -20f;
-
     private CharacterController characterController;
     private float verticalVelocity;
 
@@ -20,8 +18,9 @@ public class CharacterMotor : MonoBehaviour
     [SerializeField] private LayerMask environmentMask;//Mascara de deteccion
 
     [Header("Slide")]
-    [SerializeField] private float slideSpeed = 12f;
-    [SerializeField] private float slideDeceleration = 8f;
+    [SerializeField] private float slideSpeed = 14f;
+    [SerializeField] private float slideDeceleration = 5f;
+    private Vector3 slideDirection;
 
     private bool isSliding;
     private float currentSlideSpeed;
@@ -49,8 +48,7 @@ public class CharacterMotor : MonoBehaviour
         if (isSliding)
         {
             //para deslizar siempre hacia adelante
-            movement.x = 0f;
-            movement = transform.forward * currentSlideSpeed;
+            movement = slideDirection * currentSlideSpeed;
         }
         else
         {
@@ -138,8 +136,11 @@ public class CharacterMotor : MonoBehaviour
 
     public void StartSlide()
     {
+        if (isSliding) return;//incapacidad para no volver a inpulsarse
+
         isSliding = true;
         currentSlideSpeed = slideSpeed;
+        slideDirection = transform.forward;
     }
 
     public void StopSlide()

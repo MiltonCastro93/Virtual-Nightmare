@@ -12,11 +12,10 @@ public class PlayerController : CharacterHuman
     protected SlidingState slidingState;
     protected CrouchingState crouchingState;
 
-
     protected override void Awake()
     {
         base.Awake();
-        slidingState = new SlidingState(motor);
+        slidingState = new SlidingState(motor, cameraController);
         crouchingState = new CrouchingState(motor);
 
         inputHandler = GetComponent<PlayerInputHandler>();
@@ -73,8 +72,6 @@ public class PlayerController : CharacterHuman
 
         HandleSlide();//Efecto para deslizar
         HandleCrouchAutoStand();//Verifica en que estado volver
-
-        Debug.Log("Estado Actual: " + stateMachine.currentState.ToString());
     }
 
     private void HandleMovement()
@@ -131,7 +128,10 @@ public class PlayerController : CharacterHuman
 
     private void HandleRunCanceled()
     {
-        if(inputHandler.MoveInput.sqrMagnitude > 0.01f)
+        // El Slide no puede ser interrumpido por soltar Sprint, esta linea protege el efecto slide
+        if (stateMachine.currentState == slidingState) return;
+
+        if (inputHandler.MoveInput.sqrMagnitude > 0.01f)
         {
             stateMachine.ChangeState(walkingState);
         }
@@ -191,22 +191,22 @@ public class PlayerController : CharacterHuman
         isLookingBack = false;
 
         cameraController.ResetLookBack();
-
     }
 
     private void HandleCrouchStarted()
     {
         crouchHeld = true;
+
         // Corriendo + movimiento hacia adelante = Slide
-        if (stateMachine.currentState == runningState)
+        if(stateMachine.currentState == runningState)
         {
-            if (inputHandler.MoveInput.y > 0.1f)
+            if(inputHandler.MoveInput.y  > 0.1f)
             {
                 stateMachine.ChangeState(slidingState);
             }
 
-            return;
         }
+
         // Ya está agachado
         if (stateMachine.currentState == crouchingState)
         {
@@ -223,9 +223,8 @@ public class PlayerController : CharacterHuman
     private void HandleCrouchCanceled()
     {
         crouchHeld = false;
-
-        if (stateMachine.currentState != crouchingState)
-            return;
+        //Este if condiciona para no cancelar el slide, si no es igual, este se comple y sale del ciclo
+        if (stateMachine.currentState != crouchingState) return;
 
         // No hay espacio para levantarse, Hace un chequeo en el CharacterMotor
         if (!motor.CanStandUp())
@@ -265,8 +264,12 @@ public class PlayerController : CharacterHuman
         if (stateMachine.currentState != slidingState)
             return;
 
+        cameraController.SetLookEnabled(false);
+
         if (!motor.IsSlideFinished())
             return;
+
+        cameraController.SetLookEnabled(true);
 
         stateMachine.ChangeState(crouchingState);
     }

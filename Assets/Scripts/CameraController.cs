@@ -18,9 +18,13 @@ public class CameraController : MonoBehaviour
     private float rotationY;
     private float rotationX;
     private float rotationZ;
+    //Freezar la camara cuando slideo
+    private bool canLook = true;
 
     public void Look(Vector2 input)
     {
+        if (!canLook) return; //cuando me deslizo, incapacito la camara
+
         float mouseX = input.x * sensitivity;
         float mouseY = input.y * sensitivity;
 
@@ -66,7 +70,6 @@ public class CameraController : MonoBehaviour
         rotationY = 0f;
     }
 
-
     private void ApplyRotation()
     {
         transform.localRotation = Quaternion.Euler(
@@ -74,6 +77,11 @@ public class CameraController : MonoBehaviour
             rotationY,
             rotationZ
         );
+    }
+
+    public void SetLookEnabled(bool enabled)
+    {
+        canLook = enabled;
     }
 
 }

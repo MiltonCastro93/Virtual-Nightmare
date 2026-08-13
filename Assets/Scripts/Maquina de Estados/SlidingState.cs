@@ -4,9 +4,11 @@ public class SlidingState : ICharacterState
 {//Deslizamiento iniciado al correr + agacharse
     public bool CanMove => true;//*
     private readonly CharacterMotor motor;
-    public SlidingState(CharacterMotor Mymotor)
+    private readonly CameraController cameraController;
+    public SlidingState(CharacterMotor Mymotor, CameraController MyCameraController)
     {
         motor = Mymotor;
+        cameraController = MyCameraController;
     }
 
 
@@ -14,6 +16,8 @@ public class SlidingState : ICharacterState
     {
         motor.StartSlide();
         motor.SetCrouching(true);
+
+        cameraController.SetLookEnabled(false);
     }
 
     public void UpdateState()
@@ -24,6 +28,7 @@ public class SlidingState : ICharacterState
     public void ExitState()
     {
         motor.StopSlide();
+        cameraController.SetLookEnabled(true);
     }
 
 }
