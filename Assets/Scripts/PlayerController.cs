@@ -11,12 +11,16 @@ public class PlayerController : CharacterHuman
     private bool isLeaning, isLookingBack, crouchHeld; //Bool Banderas para detectar si estoy inclinado, mirando mi nuca, Levantarse
     protected SlidingState slidingState;
     protected CrouchingState crouchingState;
+    protected JumpingState jumpingState;
+    protected FallingState fallingState;
 
     protected override void Awake()
     {
         base.Awake();
-        slidingState = new SlidingState(motor, cameraController);
+        slidingState = new SlidingState(motor);
         crouchingState = new CrouchingState(motor);
+        jumpingState = new JumpingState(motor);
+        fallingState = new FallingState(motor);
 
         inputHandler = GetComponent<PlayerInputHandler>();
     }
@@ -40,6 +44,8 @@ public class PlayerController : CharacterHuman
 
         inputHandler.OnCrouchStarted += HandleCrouchStarted;
         inputHandler.OnCrouchCanceled += HandleCrouchCanceled;
+
+        inputHandler.OnJumpStarted += HandleJumpStarted;
     }
 
     private void OnDisable()
@@ -61,6 +67,8 @@ public class PlayerController : CharacterHuman
 
         inputHandler.OnCrouchStarted -= HandleCrouchStarted;
         inputHandler.OnCrouchCanceled -= HandleCrouchCanceled;
+
+        inputHandler.OnJumpStarted -= HandleJumpStarted;
     }
 
     protected override void Update()
@@ -72,6 +80,7 @@ public class PlayerController : CharacterHuman
 
         HandleSlide();//Efecto para deslizar
         HandleCrouchAutoStand();//Verifica en que estado volver
+        HandleAirborneStates();//despues de saltar
     }
 
     private void HandleMovement()
@@ -259,19 +268,57 @@ public class PlayerController : CharacterHuman
         }
     }
 
-    private void HandleSlide()
+    private void HandleSlide()//En el Update
     {
         if (stateMachine.currentState != slidingState)
             return;
 
         cameraController.SetLookEnabled(false);
 
-        if (!motor.IsSlideFinished())
+        if (!motor.IsSlideFinished())//comprobacion para liberar la camara de su freezeo
             return;
 
         cameraController.SetLookEnabled(true);
 
         stateMachine.ChangeState(crouchingState);
+    }
+
+    private void HandleJumpStarted()
+    {
+        if (stateMachine.currentState == idleState ||
+    stateMachine.currentState == walkingState ||
+    stateMachine.currentState == runningState)
+        {
+            stateMachine.ChangeState(jumpingState);
+        }
+    }
+
+    private void HandleAirborneStates()
+    {
+        if(stateMachine.currentState == jumpingState)
+        {
+            if(motor.VerticalVelocity < 0f)
+            {
+                stateMachine.ChangeState(fallingState);
+            }
+
+        }
+
+        if(stateMachine.currentState == fallingState)
+        {
+            if (motor.IsGrounded)
+            {
+                if(inputHandler.MoveInput.sqrMagnitude > 0.01f)
+                {
+                    stateMachine.ChangeState(walkingState);
+                }
+                else
+                {
+                    stateMachine.ChangeState(walkingState);
+                }
+            }
+        }
+
     }
 
 }

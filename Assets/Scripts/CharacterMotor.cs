@@ -10,6 +10,7 @@ public class CharacterMotor : MonoBehaviour
     [SerializeField] private float gravity = -20f;
     private CharacterController characterController;
     private float verticalVelocity;
+    public float VerticalVelocity => verticalVelocity;
 
     [Header("Parametros del Crouch")]
     [SerializeField] private float crouchHeight = 1f;
@@ -21,12 +22,14 @@ public class CharacterMotor : MonoBehaviour
     [SerializeField] private float slideSpeed = 14f;
     [SerializeField] private float slideDeceleration = 5f;
     private Vector3 slideDirection;
-
     private bool isSliding;
     private float currentSlideSpeed;
     private bool isCrouching;
     private float standingHeight;//valores predeterminados del CharacterController
     private Vector3 standingCenter;
+    [SerializeField]private float jumpForce = 8f;
+    //Asi las clases pueden consultar el estado del Cc sin acceder directamente al componente
+    public bool IsGrounded => characterController.isGrounded;
 
     private void Awake() {
         //Obtengo el CharacterController de ref y sus valores para el crouch
@@ -80,7 +83,7 @@ public class CharacterMotor : MonoBehaviour
         isRunning = running;
     }
 
-    public void SetCrouching(bool crouching)
+    public void SetCrouching(bool crouching)// Llamado desde 2 clases, SlidingState; CrouchingState
     {
         isCrouching = crouching;
     }
@@ -134,7 +137,7 @@ public class CharacterMotor : MonoBehaviour
         );
     }
 
-    public void StartSlide()
+    public void StartSlide()//Llamado desde la Clase SlidingState
     {
         if (isSliding) return;//incapacidad para no volver a inpulsarse
 
@@ -143,13 +146,13 @@ public class CharacterMotor : MonoBehaviour
         slideDirection = transform.forward;
     }
 
-    public void StopSlide()
+    public void StopSlide()//Llamado desde la Clase SlidingState
     {
         isSliding = false;
         currentSlideSpeed = 0f;
     }
 
-    private void UpdateSlide()
+    private void UpdateSlide()//Desde el Update
     {
         if (!isSliding)
             return;
@@ -161,9 +164,16 @@ public class CharacterMotor : MonoBehaviour
         );
     }
 
-    public bool IsSlideFinished()
+    public bool IsSlideFinished()//Desde el PlayerController
     {
         return currentSlideSpeed <= 0.01f;
+    }
+
+    public void Jump()
+    {
+        if (!characterController.isGrounded) return;
+
+        verticalVelocity = jumpForce;
     }
 
 }

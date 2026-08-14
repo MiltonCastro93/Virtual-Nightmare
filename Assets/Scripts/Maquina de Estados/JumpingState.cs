@@ -4,21 +4,26 @@ public class JumpingState : ICharacterState
 {//Inicio y fase ascendente del salto
 
     //Los * los vamos a decidir según cómo quiero que se sienta el juego. (JumpingState; FallingState; SlidingState)
-    public bool CanMove => true;//* 
+    public bool CanMove => true;//*
+    private readonly CharacterMotor motor;
+    public JumpingState(CharacterMotor MyMotor)
+    {
+        motor = MyMotor;
+    }
 
     public void EnterState()
     {
-        throw new System.NotImplementedException();
+        motor.Jump();
     }
 
     public void UpdateState()
     {
-        throw new System.NotImplementedException();
+
     }
 
     public void ExitState()
     {
-        throw new System.NotImplementedException();
+
     }
 
 }

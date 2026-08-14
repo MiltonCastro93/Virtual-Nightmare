@@ -21,6 +21,7 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action OnLookBackCanceled;
     public event Action OnCrouchStarted;
     public event Action OnCrouchCanceled;
+    public event Action OnJumpStarted;
 
     private InputSystem_Actions inputActions;
 
@@ -55,6 +56,8 @@ public class PlayerInputHandler : MonoBehaviour
 
         inputActions.Player.Crouch.started += HandleCrouchStarted;
         inputActions.Player.Crouch.canceled += HandleCrouchCanceled;
+
+        inputActions.Player.Jump.started += HandleJumpStarted;
     }
 
     private void OnDisable()
@@ -81,6 +84,8 @@ public class PlayerInputHandler : MonoBehaviour
 
         inputActions.Player.Crouch.started -= HandleCrouchStarted;
         inputActions.Player.Crouch.canceled -= HandleCrouchCanceled;
+
+        inputActions.Player.Jump.started -= HandleJumpStarted;
 
         inputActions.Player.Disable();
     }
@@ -152,6 +157,11 @@ public class PlayerInputHandler : MonoBehaviour
     private void HandleCrouchCanceled(InputAction.CallbackContext context)
     {
         OnCrouchCanceled?.Invoke();
+    }
+
+    private void HandleJumpStarted(InputAction.CallbackContext context)
+    {
+        OnJumpStarted?.Invoke();
     }
 
 }
