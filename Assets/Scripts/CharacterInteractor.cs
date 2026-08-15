@@ -5,7 +5,6 @@ public class CharacterInteractor : MonoBehaviour
     [Header("La Punta inicial del RayCast")]
     [SerializeField] private Camera playerCamera;
     [SerializeField] private float interactDistance = 2f;
-
     private IInteractable currentInteractable;
 
     private void Update()

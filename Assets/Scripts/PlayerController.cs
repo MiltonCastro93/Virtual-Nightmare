@@ -13,6 +13,7 @@ public class PlayerController : CharacterHuman
     protected CrouchingState crouchingState;
     protected JumpingState jumpingState;
     protected FallingState fallingState;
+    protected VaultingState vaultingState;
 
     protected override void Awake()
     {
@@ -21,6 +22,7 @@ public class PlayerController : CharacterHuman
         crouchingState = new CrouchingState(motor);
         jumpingState = new JumpingState(motor);
         fallingState = new FallingState(motor);
+        vaultingState = new VaultingState(motor);
 
         inputHandler = GetComponent<PlayerInputHandler>();
     }
@@ -285,11 +287,23 @@ public class PlayerController : CharacterHuman
 
     private void HandleJumpStarted()
     {
+        Debug.Log("Jump presionado");
+        Debug.Log("CanVault: " + motor.CanVault());
+
         if (stateMachine.currentState == idleState ||
-    stateMachine.currentState == walkingState ||
-    stateMachine.currentState == runningState)
+            stateMachine.currentState == walkingState ||
+            stateMachine.currentState == runningState)
         {
-            stateMachine.ChangeState(jumpingState);
+            if (motor.CanVault())
+            {
+                Debug.Log("ENTRA EN VAULT");
+                stateMachine.ChangeState(vaultingState);
+            }
+            else
+            {
+                Debug.Log("ENTRA EN JUMP");
+                stateMachine.ChangeState(jumpingState);
+            }
         }
     }
 
