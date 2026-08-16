@@ -13,6 +13,7 @@ public class PlayerController : CharacterHuman
     protected CrouchingState crouchingState;
     protected JumpingState jumpingState;
     protected FallingState fallingState;
+    protected ClimbingState climbingState;
     protected VaultingState vaultingState;
 
     protected override void Awake()
@@ -22,6 +23,8 @@ public class PlayerController : CharacterHuman
         crouchingState = new CrouchingState(motor);
         jumpingState = new JumpingState(motor);
         fallingState = new FallingState(motor);
+
+        climbingState = new ClimbingState(motor);
         vaultingState = new VaultingState(motor);
 
         inputHandler = GetComponent<PlayerInputHandler>();
@@ -287,23 +290,29 @@ public class PlayerController : CharacterHuman
 
     private void HandleJumpStarted()
     {
-        Debug.Log("Jump presionado");
-        Debug.Log("CanVault: " + motor.CanVault());
-
-        if (stateMachine.currentState == idleState ||
-            stateMachine.currentState == walkingState ||
-            stateMachine.currentState == runningState)
+        if (stateMachine.currentState != idleState && stateMachine.currentState != walkingState &&
+            stateMachine.currentState != runningState)
         {
-            if (motor.CanVault())
-            {
-                Debug.Log("ENTRA EN VAULT");
+            return;
+        }
+
+        ObstacleType obstacle = motor.DetectObstacle();
+
+        Debug.Log("Obstacle detectado: " + obstacle);
+
+        switch (obstacle)
+        {
+            case ObstacleType.Vault:
                 stateMachine.ChangeState(vaultingState);
-            }
-            else
-            {
-                Debug.Log("ENTRA EN JUMP");
+                break;
+
+            case ObstacleType.Climb:
+                stateMachine.ChangeState(climbingState);
+                break;
+
+            case ObstacleType.None:
                 stateMachine.ChangeState(jumpingState);
-            }
+                break;
         }
     }
 

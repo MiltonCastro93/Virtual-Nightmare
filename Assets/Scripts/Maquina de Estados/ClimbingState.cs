@@ -1,28 +1,27 @@
 using UnityEngine;
 
-public class VaultingState : ICharacterState
+public class ClimbingState : ICharacterState
 {
     public bool CanMove => false;
+
     private readonly CharacterMotor motor;
-    public VaultingState(CharacterMotor Mymotor)
+
+    public ClimbingState(CharacterMotor Mymotor)
     {
         motor = Mymotor;
     }
 
     public void EnterState()
     {
-        Debug.Log("Entré en VaultingState");
+        Debug.Log("Entré en ClimbingState");
     }
 
     public void UpdateState()
     {
-
     }
 
     public void ExitState()
     {
-        Debug.Log("Salí de VaultingState");
+        Debug.Log("Salí de ClimbingState");
     }
-
-
 }

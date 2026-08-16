@@ -31,19 +31,10 @@ public class CharacterMotor : MonoBehaviour
     //Asi las clases pueden consultar el estado del Cc sin acceder directamente al componente
     public bool IsGrounded => characterController.isGrounded;
 
-    [Header("Vault")]
-    [SerializeField] private float vaultCheckDistance = 1.2f;
-    [SerializeField] private float vaultMinHeight = 0.4f;//0.4 m < obstáculo válido > 1.2 m
-    [SerializeField] private float vaultMaxHeight = 1.2f;
-    [SerializeField] private float vaultLandingDistance = 1.2f;
-    [Header("Vault Movement")]
-    [SerializeField] private float vaultDuration = 0.5f;
-    [SerializeField] private float vaultHeight = 0.8f;
-    [SerializeField] private LayerMask vaultMask;
-    private bool isVaulting;
-    private float vaultProgress;
-    private Vector3 vaultStartPosition;
-    private Vector3 vaultEndPosition;
+    [Header("Obstacle Detection")]
+    [SerializeField] private float obstacleCheckDistance = 1f;
+    [SerializeField] private float maxVaultHeight = 1.2f;
+    [SerializeField] private float maxClimbHeight = 2f;
 
     private void Awake() {
         //Obtengo el CharacterController de ref y sus valores para el crouch
@@ -56,7 +47,6 @@ public class CharacterMotor : MonoBehaviour
     {
         UpdateCrouch();
         UpdateSlide();
-        UpdateVault();
     }
 
     public void Move(Vector2 input)
@@ -191,74 +181,30 @@ public class CharacterMotor : MonoBehaviour
         verticalVelocity = jumpForce;
     }
 
-    public bool CanVault()//Parte analiza si puedo hacer Vault
+    public ObstacleType DetectObstacle()
     {
-        Vector3 origin = transform.position + Vector3.up * vaultMaxHeight;
+        Vector3 origin = transform.position + Vector3.up * 0.5f;
 
-        if (!Physics.Raycast( origin, transform.forward, out RaycastHit obstacleHit,
-            vaultCheckDistance, vaultMask, QueryTriggerInteraction.Ignore))
+        if(!Physics.Raycast(origin, transform.forward, out RaycastHit hitInfo, obstacleCheckDistance,
+            environmentMask, QueryTriggerInteraction.Ignore))
         {
-            return false;
+            return ObstacleType.None;
         }
 
-        float obstacleHeight = obstacleHit.point.y - transform.position.y;
+        float obstacleHeight = hitInfo.point.y - transform.position.y;
+        Debug.DrawRay(origin, transform.forward * obstacleCheckDistance, Color.red, 10f);
 
-        if (obstacleHeight < vaultMinHeight || obstacleHeight > vaultMaxHeight)
+        if(obstacleHeight <= maxVaultHeight)
         {
-            return false;
+            return ObstacleType.Vault;
         }
 
-        Vector3 landingOrigin = obstacleHit.point +
-            transform.forward * vaultLandingDistance + Vector3.up * 0.5f;
-
-        if (!Physics.Raycast( landingOrigin, Vector3.down, out RaycastHit landingHit,
-            1.5f, vaultMask, QueryTriggerInteraction.Ignore))
+        if(obstacleHeight <= maxClimbHeight)
         {
-            return false;
+            return ObstacleType.Climb;
         }
 
-        return true;
-    }
-
-    public void StartVault()//Iniciar Sobre Salto
-    {
-        isVaulting = true;
-        vaultProgress = 0f;
-
-        vaultStartPosition = transform.position;
-
-        vaultEndPosition = transform.position +
-            transform.forward * vaultLandingDistance;
-    }
-    
-    private void UpdateVault()//Loop para iniciar el sobre salto
-    {
-        if (!isVaulting)
-            return;
-        vaultProgress += Time.deltaTime / vaultDuration;
-
-        float t = Mathf.Clamp01(vaultProgress);
-
-        Vector3 targetPosition = Vector3.Lerp( vaultStartPosition, vaultEndPosition, t );
-        targetPosition.y += Mathf.Sin(t * Mathf.PI) * vaultHeight;
-        Vector3 movement = targetPosition - transform.position;
-
-        characterController.Move(movement);
-
-        if (t >= 1f)
-        {
-            isVaulting = false;
-        }
-    }
-
-    public bool IsVaultFinished()
-    {
-        return !isVaulting;
-    }
-
-    public void StopVault()
-    {
-        isVaulting = false;
+        return ObstacleType.None;
     }
 
 }
