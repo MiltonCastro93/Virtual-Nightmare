@@ -1,0 +1,18 @@
+# Configuración por defecto para normalizar saltos de línea
+* text=auto
+
+# Forzar LF en archivos de Unity para evitar conflictos entre Windows y Mac
+*.asset text eol=lf
+*.meta text eol=lf
+*.prefab text eol=lf
+*.unity text eol=lf
+*.cs text eol=lf
+*.json text eol=lf
+*.asmdef text eol=lf
+
+# Asegurar que los archivos binarios no se corrompan
+*.fbx binary
+*.png binary
+*.jpg binary
+*.tga binary
+*.mat binary
