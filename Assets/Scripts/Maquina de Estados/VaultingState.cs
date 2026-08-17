@@ -12,6 +12,7 @@ public class VaultingState : ICharacterState
     public void EnterState()
     {
         Debug.Log("Entré en VaultingState");
+        //ObstacleData obstacle = motor.DetectObstacle();
     }
 
     public void UpdateState()

@@ -33,8 +33,17 @@ public class CharacterMotor : MonoBehaviour
 
     [Header("Obstacle Detection")]
     [SerializeField] private float obstacleCheckDistance = 1f;
-    [SerializeField] private float maxVaultHeight = 1.2f;
-    [SerializeField] private float maxClimbHeight = 2f;
+    [SerializeField] private float obstacleRadius = 0.35f;
+
+    [SerializeField] private float minVaultHeight = 0.45f;
+    [SerializeField] private float maxVaultHeight = 0.9f;
+    [SerializeField] private float maxClimbHeight = 1.8f;
+    [SerializeField] private float climbHeight = 2f;
+
+    [SerializeField] private float detectionBottomHeight = 0.1f;
+    [SerializeField] private float detectionTopHeight = 1.7f;
+
+    [SerializeField] private float landingCheckDistance = 1f;
 
     private void Awake() {
         //Obtengo el CharacterController de ref y sus valores para el crouch
@@ -183,23 +192,47 @@ public class CharacterMotor : MonoBehaviour
 
     public ObstacleType DetectObstacle()
     {
-        Vector3 origin = transform.position + Vector3.up * 0.5f;
+        Vector3 castBottom = transform.position + Vector3.up * detectionBottomHeight;
+        Vector3 castTop = transform.position + Vector3.up * detectionTopHeight;
+        Vector3 direction = transform.forward;
 
-        if(!Physics.Raycast(origin, transform.forward, out RaycastHit hitInfo, obstacleCheckDistance,
-            environmentMask, QueryTriggerInteraction.Ignore))
+        Debug.DrawLine( castBottom, castBottom + direction * obstacleCheckDistance,
+            Color.red, 1f );
+
+        //Compruebo si hay algun Obstaculo con una Capsula
+        if (!Physics.CapsuleCast( castBottom, castTop, obstacleRadius,
+            direction, out RaycastHit hit, obstacleCheckDistance, environmentMask,
+            QueryTriggerInteraction.Ignore))
         {
             return ObstacleType.None;
         }
 
-        float obstacleHeight = hitInfo.point.y - transform.position.y;
-        Debug.DrawRay(origin, transform.forward * obstacleCheckDistance, Color.red, 10f);
+        // Encontramos algo delante. Ahora buscamos la superficie superior.
+        Vector3 topOrigin = hit.point + Vector3.up * climbHeight + direction * 0.05f;
 
-        if(obstacleHeight <= maxVaultHeight)
+        Debug.DrawRay( topOrigin, Vector3.down * climbHeight, Color.blue, 1f );
+
+        if (!Physics.Raycast( topOrigin, Vector3.down, out RaycastHit topHit,
+            climbHeight, environmentMask, QueryTriggerInteraction.Ignore))
+        {
+            return ObstacleType.None;
+        }
+
+        float obstacleHeight = topHit.point.y - transform.position.y;
+
+        Debug.Log("Altura obstáculo: " + obstacleHeight);
+
+        if (obstacleHeight <= 0f)
+        {
+            return ObstacleType.None;
+        }
+
+        if (obstacleHeight >= minVaultHeight && obstacleHeight <= maxVaultHeight)
         {
             return ObstacleType.Vault;
         }
 
-        if(obstacleHeight <= maxClimbHeight)
+        if (obstacleHeight > maxVaultHeight && obstacleHeight <= maxClimbHeight)
         {
             return ObstacleType.Climb;
         }

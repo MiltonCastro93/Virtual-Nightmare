@@ -290,7 +290,8 @@ public class PlayerController : CharacterHuman
 
     private void HandleJumpStarted()
     {
-        if (stateMachine.currentState != idleState && stateMachine.currentState != walkingState &&
+        if (stateMachine.currentState != idleState &&
+            stateMachine.currentState != walkingState &&
             stateMachine.currentState != runningState)
         {
             return;
