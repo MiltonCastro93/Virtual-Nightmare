@@ -29,7 +29,7 @@ public class CharacterInteractor : MonoBehaviour
 
         if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
         {
-            Debug.Log($"Raycast golpeó: {hit.collider.gameObject.name}");
+            //Debug.Log($"Raycast golpeó: {hit.collider.gameObject.name}");
 
             currentInteractable =
                 hit.collider.GetComponent<IInteractable>();

@@ -196,40 +196,62 @@ public class CharacterMotor : MonoBehaviour
         {
             Vector3 topOrigin = hitInfo.point + Vector3.up * climbHeight + direccionAdelante * 0.05f;
 
-            if (Physics.Raycast(topOrigin, Vector3.down, out RaycastHit topHit, Mathf.Infinity, environmentMask, QueryTriggerInteraction.Ignore))
+            if (Physics.Raycast(topOrigin, Vector3.down, out RaycastHit topHit, Mathf.Infinity, environmentMask, QueryTriggerInteraction.Ignore))//1° Ray vertical
             {
                 Debug.DrawRay(topOrigin, Vector3.down * climbHeight, Color.blue, 1f);
 
                 float obstacleHeight = topHit.point.y - transform.position.y;
 
-                //Nueva posicion de la capsula, necesito la posicion del inpacto y etc
-                Vector3 bArriba = topHit.point + Vector3.up * obstacleRadius;
-                Vector3 tArriba = topHit.point + Vector3.up * (standingHeight - obstacleRadius);
+                //Lanzo otro Raycast para analizar la profundida y saber si es un objeto o ventana
+                float profundidadCheck = 0.8f;
+                Vector3 newTopOrigin = topOrigin + direccionAdelante * profundidadCheck;
 
-                float espacioCheckAdelante = 0.5f; // Qué tan adelante queremos comprobar si cabe el cuerpo
-
-                if (!Physics.CapsuleCast(bArriba, tArriba, obstacleRadius, direccionAdelante, out RaycastHit hitEspacio, espacioCheckAdelante, environmentMask, QueryTriggerInteraction.Ignore))
+                if(Physics.Raycast(newTopOrigin, Vector3.down, out RaycastHit newTopHit, Mathf.Infinity, environmentMask, QueryTriggerInteraction.Ignore))//2° Ray Vertical para verificar profundidad
                 {
-                    // SI ENTRA AQUÍ, SIGNIFICA QUE EL ESPACIO ESTÁ VACÍO Y EL JUGADOR CABE COMPLETAMENTE
+                    Debug.DrawRay(newTopOrigin, Vector3.down * climbHeight, Color.magenta, 1f);
 
-                    if (obstacleHeight <= 0f)
+                    float diferenciaDeAltura = Mathf.Abs(topHit.point.y - newTopHit.point.y);
+                    float margenTolerancia = 0.1f; //10 centimetros
+
+                    bool esSuperficiePlana = diferenciaDeAltura <= margenTolerancia; //False = ventana; True = Objeto
+                    Debug.Log(esSuperficiePlana);
+
+
+                    if (esSuperficiePlana)
                     {
-                        Debug.Log("No Hay Nada None");
+                        //Nueva posicion de la capsula, necesito la posicion del inpacto y etc
+                        Vector3 bArriba = topHit.point + Vector3.up * obstacleRadius;
+                        Vector3 tArriba = topHit.point + Vector3.up * (standingHeight - obstacleRadius);
+
+                        float espacioCheckAdelante = 0.5f; // Qué tan adelante queremos comprobar si cabe el cuerpo
+
+                        //CapsulaCast para verificar si tengo lugar en la posicion
+                        if (!Physics.CapsuleCast(bArriba, tArriba,obstacleRadius,direccionAdelante,out RaycastHit hitEspacio, espacioCheckAdelante, environmentMask, QueryTriggerInteraction.Ignore))
+                        {
+                            //Si entra en este if, el jugador cabe perfectamente
+                            if (obstacleHeight >= minVaultHeight && obstacleHeight <= maxVaultHeight)
+                            {
+                                Debug.Log("Debo Hacer Vaulting porque es un escritorio largo");
+                                return ObstacleType.Vault;
+                            }
+                            else if (obstacleHeight > maxVaultHeight && obstacleHeight <= maxClimbHeight)
+                            {
+                                Debug.Log("Debo Hacer Climb");
+                                return ObstacleType.Climb;
+                            }
+                            //un else para hacer el Mantle
+                        }
+                        else
+                        {
+                            Debug.Log("Espacio Obstruido con algo arriba");
+                        }
                     }
-                    else if (obstacleHeight >= minVaultHeight && obstacleHeight <= maxVaultHeight)
+                    else
                     {
-                        Debug.Log("Debo Hacer Vault");
-                        return ObstacleType.Vault; // Recuerda retornar el tipo correcto aquí
+                        Debug.Log("Debo hacer Vaulting porque es una ventana/escritorio corto");
+                        return ObstacleType.Vault;
                     }
-                    else if (obstacleHeight > maxVaultHeight && obstacleHeight <= maxClimbHeight)
-                    {
-                        Debug.Log("Debo Hacer Climb");
-                        return ObstacleType.Climb; // Recuerda retornar el tipo correcto aquí
-                    }
-                }
-                else
-                {
-                    Debug.Log("No puedo subir: El espacio superior está obstruido por: " + hitEspacio.collider.name);
+
                 }
             }
         }

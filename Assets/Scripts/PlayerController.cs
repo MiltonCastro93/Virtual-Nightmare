@@ -300,8 +300,6 @@ public class PlayerController : CharacterHuman
 
         ObstacleType obstacle = motor.DetectObstacle();
 
-        Debug.Log("Obstacle detectado: " + obstacle);
-
         switch (obstacle)
         {
             case ObstacleType.Vault:

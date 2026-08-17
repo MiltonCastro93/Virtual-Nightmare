@@ -464,8 +464,8 @@ Transform:
   m_GameObject: {fileID: 309878398}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.21, y: 1.13, z: 1.32299}
-  m_LocalScale: {x: 1, y: 2.2342184, z: 1}
+  m_LocalPosition: {x: 1.5, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -531,7 +531,7 @@ GameObject:
   - component: {fileID: 508346789}
   - component: {fileID: 508346788}
   - component: {fileID: 508346787}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Tierra
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -738,8 +738,8 @@ Transform:
   m_GameObject: {fileID: 724337539}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.69, y: 0.55, z: 1.32299}
-  m_LocalScale: {x: 1, y: 0.30362, z: 1}
+  m_LocalPosition: {x: -2, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 0.3, z: 0.3}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -882,7 +882,7 @@ Transform:
   m_GameObject: {fileID: 1090040272}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 1, z: -0.384}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -916,13 +916,10 @@ MonoBehaviour:
   slideDeceleration: 5
   obstacleCheckDistance: 1
   obstacleRadius: 0.35
-  minVaultHeight: 0.1
+  minVaultHeight: 0.05
   maxVaultHeight: 0.9
   maxClimbHeight: 1.8
   climbHeight: 2
-  detectionBottomHeight: 0.1
-  detectionTopHeight: 1.7
-  landingCheckDistance: 1
 --- !u!114 &1090040279
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1094,8 +1091,8 @@ Transform:
   m_GameObject: {fileID: 1181091211}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.8014, y: 1.089, z: 1.32299}
-  m_LocalScale: {x: 1, y: 0.30362, z: 1}
+  m_LocalPosition: {x: 0, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 0.3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
