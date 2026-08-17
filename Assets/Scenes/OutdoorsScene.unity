@@ -916,7 +916,9 @@ MonoBehaviour:
   slideDeceleration: 5
   obstacleCheckDistance: 1
   obstacleRadius: 0.35
-  vaultHeight: 1.2
+  minVaultHeight: 0.1
+  maxVaultHeight: 0.9
+  maxClimbHeight: 1.8
   climbHeight: 2
   detectionBottomHeight: 0.1
   detectionTopHeight: 1.7

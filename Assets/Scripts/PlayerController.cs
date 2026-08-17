@@ -232,6 +232,7 @@ public class PlayerController : CharacterHuman
         {
             stateMachine.ChangeState(crouchingState);
         }
+
     }
 
     private void HandleCrouchCanceled()

@@ -1,3 +1,4 @@
+using NUnit.Framework.Internal;
 using System;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -35,15 +36,10 @@ public class CharacterMotor : MonoBehaviour
     [SerializeField] private float obstacleCheckDistance = 1f;
     [SerializeField] private float obstacleRadius = 0.35f;
 
-    [SerializeField] private float minVaultHeight = 0.45f;
-    [SerializeField] private float maxVaultHeight = 0.9f;
-    [SerializeField] private float maxClimbHeight = 1.8f;
+    [SerializeField] private float minVaultHeight = 0.45f;//Altura minima para hacer Vault
+    [SerializeField] private float maxVaultHeight = 0.9f;//Altura Maxima para hacer Vault
+    [SerializeField] private float maxClimbHeight = 1.8f;//Altura Maxima para hacer Climb
     [SerializeField] private float climbHeight = 2f;
-
-    [SerializeField] private float detectionBottomHeight = 0.1f;
-    [SerializeField] private float detectionTopHeight = 1.7f;
-
-    [SerializeField] private float landingCheckDistance = 1f;
 
     private void Awake() {
         //Obtengo el CharacterController de ref y sus valores para el crouch
@@ -192,53 +188,103 @@ public class CharacterMotor : MonoBehaviour
 
     public ObstacleType DetectObstacle()
     {
-        Vector3 castBottom = transform.position + Vector3.up * detectionBottomHeight;
-        Vector3 castTop = transform.position + Vector3.up * detectionTopHeight;
-        Vector3 direction = transform.forward;
+        Vector3 bottom = transform.position + standingCenter + Vector3.up * obstacleRadius;
+        Vector3 top = transform.position + standingCenter + Vector3.up * (standingHeight - obstacleRadius);
+        Vector3 direccionAdelante = transform.forward;
 
-        Debug.DrawLine( castBottom, castBottom + direction * obstacleCheckDistance,
-            Color.red, 1f );
-
-        //Compruebo si hay algun Obstaculo con una Capsula
-        if (!Physics.CapsuleCast( castBottom, castTop, obstacleRadius,
-            direction, out RaycastHit hit, obstacleCheckDistance, environmentMask,
-            QueryTriggerInteraction.Ignore))
+        if (Physics.CapsuleCast(bottom, top, obstacleRadius, direccionAdelante, out RaycastHit hitInfo, obstacleCheckDistance, environmentMask, QueryTriggerInteraction.Ignore))
         {
-            return ObstacleType.None;
-        }
+            Vector3 topOrigin = hitInfo.point + Vector3.up * climbHeight + direccionAdelante * 0.05f;
 
-        // Encontramos algo delante. Ahora buscamos la superficie superior.
-        Vector3 topOrigin = hit.point + Vector3.up * climbHeight + direction * 0.05f;
+            if (Physics.Raycast(topOrigin, Vector3.down, out RaycastHit topHit, Mathf.Infinity, environmentMask, QueryTriggerInteraction.Ignore))
+            {
+                Debug.DrawRay(topOrigin, Vector3.down * climbHeight, Color.blue, 1f);
 
-        Debug.DrawRay( topOrigin, Vector3.down * climbHeight, Color.blue, 1f );
+                float obstacleHeight = topHit.point.y - transform.position.y;
 
-        if (!Physics.Raycast( topOrigin, Vector3.down, out RaycastHit topHit,
-            climbHeight, environmentMask, QueryTriggerInteraction.Ignore))
-        {
-            return ObstacleType.None;
-        }
+                //Nueva posicion de la capsula, necesito la posicion del inpacto y etc
+                Vector3 bArriba = topHit.point + Vector3.up * obstacleRadius;
+                Vector3 tArriba = topHit.point + Vector3.up * (standingHeight - obstacleRadius);
 
-        float obstacleHeight = topHit.point.y - transform.position.y;
+                float espacioCheckAdelante = 0.5f; // Qué tan adelante queremos comprobar si cabe el cuerpo
 
-        Debug.Log("Altura obstáculo: " + obstacleHeight);
+                if (!Physics.CapsuleCast(bArriba, tArriba, obstacleRadius, direccionAdelante, out RaycastHit hitEspacio, espacioCheckAdelante, environmentMask, QueryTriggerInteraction.Ignore))
+                {
+                    // SI ENTRA AQUÍ, SIGNIFICA QUE EL ESPACIO ESTÁ VACÍO Y EL JUGADOR CABE COMPLETAMENTE
 
-        if (obstacleHeight <= 0f)
-        {
-            return ObstacleType.None;
-        }
-
-        if (obstacleHeight >= minVaultHeight && obstacleHeight <= maxVaultHeight)
-        {
-            return ObstacleType.Vault;
-        }
-
-        if (obstacleHeight > maxVaultHeight && obstacleHeight <= maxClimbHeight)
-        {
-            return ObstacleType.Climb;
+                    if (obstacleHeight <= 0f)
+                    {
+                        Debug.Log("No Hay Nada None");
+                    }
+                    else if (obstacleHeight >= minVaultHeight && obstacleHeight <= maxVaultHeight)
+                    {
+                        Debug.Log("Debo Hacer Vault");
+                        return ObstacleType.Vault; // Recuerda retornar el tipo correcto aquí
+                    }
+                    else if (obstacleHeight > maxVaultHeight && obstacleHeight <= maxClimbHeight)
+                    {
+                        Debug.Log("Debo Hacer Climb");
+                        return ObstacleType.Climb; // Recuerda retornar el tipo correcto aquí
+                    }
+                }
+                else
+                {
+                    Debug.Log("No puedo subir: El espacio superior está obstruido por: " + hitEspacio.collider.name);
+                }
+            }
         }
 
         return ObstacleType.None;
     }
+
+    private void OnDrawGizmos()
+    {
+        // Asegúrate de calcular las variables igual que en tu método de física
+        // (Puedes hacer estas variables globales o propiedades para no repetir código)
+        float obstacleRadius = 0.5f; // Usa tu variable real
+        float standingHeight = 2.0f; // Usa tu variable real
+        Vector3 standingCenter = transform.position; // Usa tu variable real
+        float obstacleCheckDistance = 1.0f; // Usa tu variable real
+
+        // El punto de abajo resta la mitad de la altura y suma el radio
+        Vector3 bottom = transform.position + Vector3.up * (-(standingHeight / 2f) + obstacleRadius);
+
+        // El punto de arriba suma la mitad de la altura y resta el radio
+        Vector3 top = transform.position + Vector3.up * ((standingHeight / 2f) - obstacleRadius);
+        Vector3 direccion = transform.forward;
+
+        // --- 1. DIBUJAR LA CÁPSULA EN SU POSICIÓN INICIAL ---
+        Gizmos.color = Color.yellow;
+        // Esferas de los extremos
+        Gizmos.DrawWireSphere(bottom, obstacleRadius);
+        Gizmos.DrawWireSphere(top, obstacleRadius);
+        // Líneas laterales que unen las esferas
+        DibujarLineasCapsula(bottom, top, obstacleRadius);
+
+        // --- 2. DIBUJAR EL RECORRIDO DEL BARRIDO (SWEEP) ---
+        Gizmos.color = Color.cyan;
+        Vector3 desplazamiento = direccion * obstacleCheckDistance;
+
+        // Líneas que muestran hacia dónde se mueve la cápsula
+        Gizmos.DrawLine(bottom, bottom + desplazamiento);
+        Gizmos.DrawLine(top, top + desplazamiento);
+
+        // Cápsula de destino (donde termina el cast)
+        Gizmos.DrawWireSphere(bottom + desplazamiento, obstacleRadius);
+        Gizmos.DrawWireSphere(top + desplazamiento, obstacleRadius);
+        DibujarLineasCapsula(bottom + desplazamiento, top + desplazamiento, obstacleRadius);
+    }
+
+    // Función auxiliar para conectar las esferas de la cápsula con líneas
+    private void DibujarLineasCapsula(Vector3 b, Vector3 t, float r)
+    {
+        Gizmos.DrawLine(b + Vector3.left * r, t + Vector3.left * r);
+        Gizmos.DrawLine(b + Vector3.right * r, t + Vector3.right * r);
+        Gizmos.DrawLine(b + Vector3.forward * r, t + Vector3.forward * r);
+        Gizmos.DrawLine(b + Vector3.back * r, t + Vector3.back * r);
+    }
+
+
 
 }
 
