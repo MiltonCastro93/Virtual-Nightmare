@@ -242,12 +242,12 @@ public class CharacterMotor : MonoBehaviour
                             if (obstacleHeight >= minVaultHeight && obstacleHeight <= maxVaultHeight)
                             {
                                 //Hacer Vault arriba de escritorio
-                                return new ObstacleData(ObstacleType.Vault, hitEspacio.point);
+                                return new ObstacleData(ObstacleType.Vault, hitEspacio.point, hitEspacio.point);
                             }
                             else if (obstacleHeight > maxVaultHeight && obstacleHeight <= maxClimbHeight)
                             {
                                 //Hacer Climb
-                                return new ObstacleData(ObstacleType.Climb, hitEspacio.point);
+                                return new ObstacleData(ObstacleType.Climb, hitEspacio.point, hitEspacio.point);
                             }
                             //un else para hacer el Mantle
                         }
@@ -259,14 +259,14 @@ public class CharacterMotor : MonoBehaviour
                     else
                     {
                         //Debug.Log("Debo hacer Vaulting porque es una ventana/escritorio corto");
-                        return new ObstacleData(ObstacleType.Vault, newTopHit.point);
+                        return new ObstacleData(ObstacleType.Vault, newTopHit.point, newTopHit.point);
                     }
 
                 }
             }
         }
 
-        return new ObstacleData(ObstacleType.None, Vector3.zero);
+        return new ObstacleData(ObstacleType.None, Vector3.zero, Vector3.zero);
     }
 
     public void StartVault(Vector3 obstacleTop)

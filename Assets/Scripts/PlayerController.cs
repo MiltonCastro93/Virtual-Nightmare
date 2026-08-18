@@ -91,6 +91,8 @@ public class PlayerController : CharacterHuman
 
     private void HandleMovement()
     {//PlayerInputHandler --> PlayerController --> CharacterMotor
+        if (!stateMachine.currentState.CanMove) return; //si tengo una clase con false no se movera
+
         motor.Move(inputHandler.MoveInput);
     }
 
@@ -303,7 +305,8 @@ public class PlayerController : CharacterHuman
 
         Debug.Log(
             $"Tipo: {obstacle.Type} | " +
-            $"TopPoint: {obstacle.TopPoint}"
+            $"Top: {obstacle.TopPoint} | " +
+            $"Landing: {obstacle.LandingPoint}"
         );
 
         switch (obstacle.Type)

@@ -6,11 +6,13 @@ public struct ObstacleData
 {
     public ObstacleType Type;
     public Vector3 TopPoint;
+    public Vector3 LandingPoint;
 
-    public ObstacleData(ObstacleType type, Vector3 topPoint)
+    public ObstacleData(ObstacleType type, Vector3 topPoint, Vector3 landingPoint)
     {
         Type = type;
         TopPoint = topPoint;
+        LandingPoint = landingPoint;
     }
 
 }
