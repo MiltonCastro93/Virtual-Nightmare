@@ -24,8 +24,8 @@ public class PlayerController : CharacterHuman
         jumpingState = new JumpingState(motor);
         fallingState = new FallingState(motor);
 
+
         climbingState = new ClimbingState(motor);
-        vaultingState = new VaultingState(motor);
 
         inputHandler = GetComponent<PlayerInputHandler>();
     }
@@ -86,6 +86,7 @@ public class PlayerController : CharacterHuman
         HandleSlide();//Efecto para deslizar
         HandleCrouchAutoStand();//Verifica en que estado volver
         HandleAirborneStates();//despues de saltar
+        HandleVault();//Al sobresaltar obstaculos
     }
 
     private void HandleMovement()
@@ -292,22 +293,33 @@ public class PlayerController : CharacterHuman
     private void HandleJumpStarted()
     {
         if (stateMachine.currentState != idleState &&
-            stateMachine.currentState != walkingState &&
-            stateMachine.currentState != runningState)
+                stateMachine.currentState != walkingState &&
+                stateMachine.currentState != runningState)
         {
             return;
         }
 
-        ObstacleType obstacle = motor.DetectObstacle();
+        ObstacleData obstacle = motor.DetectObstacle();
 
-        switch (obstacle)
+        Debug.Log(
+            $"Tipo: {obstacle.Type} | " +
+            $"TopPoint: {obstacle.TopPoint}"
+        );
+
+        switch (obstacle.Type)
         {
             case ObstacleType.Vault:
+
+                vaultingState = new VaultingState(
+                    motor,
+                    obstacle.TopPoint
+                );
+
                 stateMachine.ChangeState(vaultingState);
                 break;
 
             case ObstacleType.Climb:
-                stateMachine.ChangeState(climbingState);
+                // Lo hacemos después.
                 break;
 
             case ObstacleType.None:
@@ -342,6 +354,24 @@ public class PlayerController : CharacterHuman
             }
         }
 
+    }
+
+    private void HandleVault()
+    {
+        if (stateMachine.currentState != vaultingState)
+            return;
+
+        if (!motor.IsVaultFinished())
+            return;
+
+        if (inputHandler.MoveInput.sqrMagnitude > 0.01f)
+        {
+            stateMachine.ChangeState(walkingState);
+        }
+        else
+        {
+            stateMachine.ChangeState(idleState);
+        }
     }
 
 }

@@ -41,6 +41,17 @@ public class CharacterMotor : MonoBehaviour
     [SerializeField] private float maxClimbHeight = 1.8f;//Altura Maxima para hacer Climb
     [SerializeField] private float climbHeight = 2f;
 
+    [Header("Vault")]
+    [SerializeField] private float vaultDuration = 0.45f;
+    [SerializeField] private float vaultForwardDistance = 1.2f;
+    [SerializeField] private float vaultArcHeight = 0.8f;
+
+    private bool isVaulting;
+    private float vaultTimer;
+
+    private Vector3 vaultStartPosition;
+    private Vector3 vaultTargetPosition;
+
     private void Awake() {
         //Obtengo el CharacterController de ref y sus valores para el crouch
         characterController = GetComponent<CharacterController>();
@@ -52,6 +63,7 @@ public class CharacterMotor : MonoBehaviour
     {
         UpdateCrouch();
         UpdateSlide();
+        UpdateVault();
     }
 
     public void Move(Vector2 input)
@@ -186,7 +198,7 @@ public class CharacterMotor : MonoBehaviour
         verticalVelocity = jumpForce;
     }
 
-    public ObstacleType DetectObstacle()
+    public ObstacleData DetectObstacle()
     {
         Vector3 bottom = transform.position + standingCenter + Vector3.up * obstacleRadius;
         Vector3 top = transform.position + standingCenter + Vector3.up * (standingHeight - obstacleRadius);
@@ -214,8 +226,6 @@ public class CharacterMotor : MonoBehaviour
                     float margenTolerancia = 0.1f; //10 centimetros
 
                     bool esSuperficiePlana = diferenciaDeAltura <= margenTolerancia; //False = ventana; True = Objeto
-                    Debug.Log(esSuperficiePlana);
-
 
                     if (esSuperficiePlana)
                     {
@@ -231,33 +241,72 @@ public class CharacterMotor : MonoBehaviour
                             //Si entra en este if, el jugador cabe perfectamente
                             if (obstacleHeight >= minVaultHeight && obstacleHeight <= maxVaultHeight)
                             {
-                                Debug.Log("Debo Hacer Vaulting porque es un escritorio largo");
-                                return ObstacleType.Vault;
+                                //Hacer Vault arriba de escritorio
+                                return new ObstacleData(ObstacleType.Vault, hitEspacio.point);
                             }
                             else if (obstacleHeight > maxVaultHeight && obstacleHeight <= maxClimbHeight)
                             {
-                                Debug.Log("Debo Hacer Climb");
-                                return ObstacleType.Climb;
+                                //Hacer Climb
+                                return new ObstacleData(ObstacleType.Climb, hitEspacio.point);
                             }
                             //un else para hacer el Mantle
                         }
                         else
                         {
-                            Debug.Log("Espacio Obstruido con algo arriba");
+                            //Debug.Log("Espacio Obstruido con algo arriba");
                         }
                     }
                     else
                     {
-                        Debug.Log("Debo hacer Vaulting porque es una ventana/escritorio corto");
-                        return ObstacleType.Vault;
+                        //Debug.Log("Debo hacer Vaulting porque es una ventana/escritorio corto");
+                        return new ObstacleData(ObstacleType.Vault, newTopHit.point);
                     }
 
                 }
             }
         }
 
-        return ObstacleType.None;
+        return new ObstacleData(ObstacleType.None, Vector3.zero);
     }
+
+    public void StartVault(Vector3 obstacleTop)
+    {
+        isVaulting = true;
+        vaultTimer = 0f;
+
+        vaultStartPosition = transform.position;
+
+        vaultTargetPosition = obstacleTop + transform.forward * vaultForwardDistance;
+    }
+    private void UpdateVault()
+    {
+        if (!isVaulting)
+            return;
+
+        vaultTimer += Time.deltaTime;
+
+        float t = vaultTimer / vaultDuration;
+        t = Mathf.Clamp01(t);
+
+        Vector3 position = Vector3.Lerp(
+            vaultStartPosition,
+            vaultTargetPosition,
+            t
+        );
+
+        // Arco del vault
+        position.y += Mathf.Sin(t * Mathf.PI) * vaultArcHeight;
+
+        transform.position = position;
+
+        if (t >= 1f)
+        {
+            isVaulting = false;
+        }
+
+    }
+
+    public bool IsVaultFinished() { return !isVaulting; }
 
     private void OnDrawGizmos()
     {
