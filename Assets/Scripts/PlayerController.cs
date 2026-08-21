@@ -24,9 +24,6 @@ public class PlayerController : CharacterHuman
         jumpingState = new JumpingState(motor);
         fallingState = new FallingState(motor);
 
-
-        climbingState = new ClimbingState(motor);
-
         inputHandler = GetComponent<PlayerInputHandler>();
     }
 
@@ -312,17 +309,13 @@ public class PlayerController : CharacterHuman
         switch (obstacle.Type)
         {
             case ObstacleType.Vault:
-
-                vaultingState = new VaultingState(
-                    motor,
-                    obstacle.TopPoint
-                );
-
+                vaultingState = new VaultingState(motor, obstacle.TopPoint, obstacle.LandingPoint);
                 stateMachine.ChangeState(vaultingState);
                 break;
 
             case ObstacleType.Climb:
-                // Lo hacemos después.
+                climbingState = new ClimbingState(motor,obstacle.TopPoint,obstacle.LandingPoint);
+                stateMachine.ChangeState(climbingState);
                 break;
 
             case ObstacleType.None:
@@ -331,7 +324,7 @@ public class PlayerController : CharacterHuman
         }
     }
 
-    private void HandleAirborneStates()
+    private void HandleAirborneStates() //Estados de salto, -> Caer; ->Caminar; ->Correr
     {
         if(stateMachine.currentState == jumpingState)
         {
@@ -352,7 +345,7 @@ public class PlayerController : CharacterHuman
                 }
                 else
                 {
-                    stateMachine.ChangeState(walkingState);
+                    stateMachine.ChangeState(idleState);
                 }
             }
         }

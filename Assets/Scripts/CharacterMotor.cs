@@ -204,80 +204,116 @@ public class CharacterMotor : MonoBehaviour
         Vector3 top = transform.position + standingCenter + Vector3.up * (standingHeight - obstacleRadius);
         Vector3 direccionAdelante = transform.forward;
 
-        if (Physics.CapsuleCast(bottom, top, obstacleRadius, direccionAdelante, out RaycastHit hitInfo, obstacleCheckDistance, environmentMask, QueryTriggerInteraction.Ignore))
+        // 1. Zona de Accion {Detecta si es un mueble}
+        if (Physics.CapsuleCast( bottom, top, obstacleRadius, direccionAdelante,
+            out RaycastHit hitInfo, obstacleCheckDistance, environmentMask, QueryTriggerInteraction.Ignore))
         {
             Vector3 topOrigin = hitInfo.point + Vector3.up * climbHeight + direccionAdelante * 0.05f;
 
-            if (Physics.Raycast(topOrigin, Vector3.down, out RaycastHit topHit, Mathf.Infinity, environmentMask, QueryTriggerInteraction.Ignore))//1° Ray vertical
+            // 2. Que altura tiene?
+            if (Physics.Raycast( topOrigin, Vector3.down, out RaycastHit topHit, Mathf.Infinity, environmentMask, QueryTriggerInteraction.Ignore))
             {
-                Debug.DrawRay(topOrigin, Vector3.down * climbHeight, Color.blue, 1f);
+                Debug.DrawRay( topOrigin, Vector3.down * climbHeight, Color.blue, 1f );
 
                 float obstacleHeight = topHit.point.y - transform.position.y;
 
-                //Lanzo otro Raycast para analizar la profundida y saber si es un objeto o ventana
+                // 3. COMPROBAR PROFUNDIDAD
                 float profundidadCheck = 0.8f;
+
                 Vector3 newTopOrigin = topOrigin + direccionAdelante * profundidadCheck;
 
-                if(Physics.Raycast(newTopOrigin, Vector3.down, out RaycastHit newTopHit, Mathf.Infinity, environmentMask, QueryTriggerInteraction.Ignore))//2° Ray Vertical para verificar profundidad
+                if (Physics.Raycast( newTopOrigin, Vector3.down, out RaycastHit newTopHit, Mathf.Infinity, environmentMask, QueryTriggerInteraction.Ignore))
                 {
-                    Debug.DrawRay(newTopOrigin, Vector3.down * climbHeight, Color.magenta, 1f);
+                    Debug.DrawRay( newTopOrigin, Vector3.down * climbHeight, Color.magenta, 1f );
 
-                    float diferenciaDeAltura = Mathf.Abs(topHit.point.y - newTopHit.point.y);
-                    float margenTolerancia = 0.1f; //10 centimetros
+                    float diferenciaDeAltura = Mathf.Abs( topHit.point.y - newTopHit.point.y );
+                    float margenTolerancia = 0.1f;
 
-                    bool esSuperficiePlana = diferenciaDeAltura <= margenTolerancia; //False = ventana; True = Objeto
+                    bool esSuperficiePlana = diferenciaDeAltura <= margenTolerancia;
+
+                    // SUPERFICIE PLANA {Mesa / escritorio / mueble}
 
                     if (esSuperficiePlana)
                     {
-                        //Nueva posicion de la capsula, necesito la posicion del inpacto y etc
                         Vector3 bArriba = topHit.point + Vector3.up * obstacleRadius;
                         Vector3 tArriba = topHit.point + Vector3.up * (standingHeight - obstacleRadius);
 
-                        float espacioCheckAdelante = 0.5f; // Qué tan adelante queremos comprobar si cabe el cuerpo
+                        float espacioCheckAdelante = 0.5f;
 
-                        //CapsulaCast para verificar si tengo lugar en la posicion
-                        if (!Physics.CapsuleCast(bArriba, tArriba,obstacleRadius,direccionAdelante,out RaycastHit hitEspacio, espacioCheckAdelante, environmentMask, QueryTriggerInteraction.Ignore))
+                        // Hay lugar para mi en el Obstaculo?
+                        bool espacioLibre = !Physics.CapsuleCast(
+                            bArriba, tArriba, obstacleRadius,
+                            direccionAdelante, out RaycastHit _,
+                            espacioCheckAdelante, environmentMask,
+                            QueryTriggerInteraction.Ignore
+                        );
+
+                        if (espacioLibre)
                         {
-                            //Si entra en este if, el jugador cabe perfectamente
+                            // hacer VAULT
                             if (obstacleHeight >= minVaultHeight && obstacleHeight <= maxVaultHeight)
                             {
-                                //Hacer Vault arriba de escritorio
-                                return new ObstacleData(ObstacleType.Vault, hitEspacio.point, hitEspacio.point);
+                                return new ObstacleData(ObstacleType.Vault, topHit.point, topHit.point);
                             }
-                            else if (obstacleHeight > maxVaultHeight && obstacleHeight <= maxClimbHeight)
+
+                            // hacer CLIMB
+                            if (obstacleHeight > maxVaultHeight && obstacleHeight <= maxClimbHeight)
                             {
-                                //Hacer Climb
-                                return new ObstacleData(ObstacleType.Climb, hitEspacio.point, hitEspacio.point);
+                                return new ObstacleData(ObstacleType.Climb, topHit.point, topHit.point);
                             }
-                            //un else para hacer el Mantle
                         }
-                        else
-                        {
-                            //Debug.Log("Espacio Obstruido con algo arriba");
-                        }
-                    }
-                    else
-                    {
-                        //Debug.Log("Debo hacer Vaulting porque es una ventana/escritorio corto");
-                        return new ObstacleData(ObstacleType.Vault, newTopHit.point, newTopHit.point);
                     }
 
+                    // SUPERFICIE NO PLANA {Marco - Mueble Fino}
+                    else
+                    {
+                        float landingDistance = 1.2f;
+
+                        Vector3 landingOrigin = newTopHit.point + direccionAdelante * landingDistance + Vector3.up * 2f;
+
+                        if (Physics.Raycast( landingOrigin, Vector3.down, out RaycastHit landingHit, 4f, environmentMask, QueryTriggerInteraction.Ignore))
+                        {
+                            Vector3 landingPoint = landingHit.point;
+
+                            Debug.DrawRay( landingOrigin, Vector3.down * 4f, Color.green, 1f );
+
+                            return new ObstacleData(ObstacleType.Vault, newTopHit.point, landingPoint);
+                        }
+                    }
                 }
             }
         }
 
+        // --------------------------------------------------
+        // NO HAY OBSTÁCULO
+        // --------------------------------------------------
+
         return new ObstacleData(ObstacleType.None, Vector3.zero, Vector3.zero);
     }
 
-    public void StartVault(Vector3 obstacleTop)
+    public void StartVault(Vector3 obstacleTop, Vector3 landingPoint)
     {
         isVaulting = true;
         vaultTimer = 0f;
 
+        // El jugador deja de estar agachado
+        isCrouching = false;
+
         vaultStartPosition = transform.position;
 
-        vaultTargetPosition = obstacleTop + transform.forward * vaultForwardDistance;
+        // Convertimos el punto de superficie
+        // en una posición válida para el CharacterController.
+        vaultTargetPosition = GetCharacterPositionAtSurface(landingPoint);
     }
+
+    private Vector3 GetCharacterPositionAtSurface(Vector3 surfacePoint)
+    {
+        Vector3 position = surfacePoint;
+        position.y = surfacePoint.y - characterController.center.y + characterController.height * 0.5f;
+
+        return position;
+    }
+
     private void UpdateVault()
     {
         if (!isVaulting)
@@ -288,22 +324,16 @@ public class CharacterMotor : MonoBehaviour
         float t = vaultTimer / vaultDuration;
         t = Mathf.Clamp01(t);
 
-        Vector3 position = Vector3.Lerp(
-            vaultStartPosition,
-            vaultTargetPosition,
-            t
-        );
+        Vector3 targetPosition = Vector3.Lerp(vaultStartPosition, vaultTargetPosition, t);
+        targetPosition.y += Mathf.Sin(t * Mathf.PI) * vaultArcHeight;// Arco del movimiento
 
-        // Arco del vault
-        position.y += Mathf.Sin(t * Mathf.PI) * vaultArcHeight;
-
-        transform.position = position;
+        Vector3 movement = targetPosition - transform.position;// Movimiento necesario desde la posición actual
+        characterController.Move(movement);
 
         if (t >= 1f)
         {
             isVaulting = false;
         }
-
     }
 
     public bool IsVaultFinished() { return !isVaulting; }
